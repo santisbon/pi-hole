@@ -1,0 +1,58 @@
+{{- define "pihole.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "pihole.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- define "pihole.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "pihole.labels" -}}
+helm.sh/chart: {{ include "pihole.chart" . }}
+{{ include "pihole.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{- define "pihole.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "pihole.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{- define "pihole.secretName" -}}
+{{- if .Values.credentials.existingSecret }}
+{{- .Values.credentials.existingSecret }}
+{{- else }}
+{{- include "pihole.fullname" . }}-credentials
+{{- end }}
+{{- end }}
+
+{{- define "pihole.pvcPihole" -}}
+{{- if .Values.persistence.pihole.existingClaim }}
+{{- .Values.persistence.pihole.existingClaim }}
+{{- else }}
+{{- include "pihole.fullname" . }}-pihole
+{{- end }}
+{{- end }}
+
+{{- define "pihole.pvcDnsmasq" -}}
+{{- if .Values.persistence.dnsmasq.existingClaim }}
+{{- .Values.persistence.dnsmasq.existingClaim }}
+{{- else }}
+{{- include "pihole.fullname" . }}-dnsmasq
+{{- end }}
+{{- end }}

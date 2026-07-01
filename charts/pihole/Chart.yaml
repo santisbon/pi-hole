@@ -1,0 +1,8 @@
+apiVersion: v2
+name: pihole
+version: 0.1.0
+appVersion: "latest"
+description: Pi-hole, a network-wide ad blocker
+home: https://pi-hole.net
+maintainers:
+  - name: santisbon

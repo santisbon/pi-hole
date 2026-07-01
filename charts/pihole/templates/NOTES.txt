@@ -1,0 +1,32 @@
+Pi-hole has been deployed.
+
+Web admin interface:
+{{- if .Values.httpRoute.enabled }}
+{{- if .Values.httpRoute.hostnames }}
+  {{- range .Values.httpRoute.hostnames }}
+  http://{{ . }}/admin
+  {{- end }}
+{{- else }}
+  Access via your gateway's hostname or IP at /admin
+{{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "pihole.fullname" . }}-web 8080:80
+  http://localhost:8080/admin
+{{- end }}
+
+DNS service ({{ .Values.dnsService.type }}):
+{{- if eq .Values.dnsService.type "LoadBalancer" }}
+  Run the following to get the assigned IP:
+  kubectl get svc {{ include "pihole.fullname" . }}-dns -n {{ .Release.Namespace }}
+
+  Once you have the IP, point your devices' DNS to that address.
+{{- else if eq .Values.dnsService.type "NodePort" }}
+  Run the following to get the node port:
+  kubectl get svc {{ include "pihole.fullname" . }}-dns -n {{ .Release.Namespace }}
+
+  Point your devices' DNS to <node-ip>:<node-port>.
+{{- end }}
+
+First-time login:
+  Use the password set in credentials.webPassword (or the key "web-password"
+  in your existing secret).

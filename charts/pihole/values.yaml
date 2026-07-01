@@ -1,0 +1,97 @@
+image:
+  repository: pihole/pihole
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Pi-hole does not support horizontal scaling
+replicaCount: 1
+
+# Timezone for Pi-hole (https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+timezone: "UTC"
+
+# Set to 'ALL' when using Docker's default bridge network (required in most Kubernetes setups)
+# Set to 'LOCAL' for host-network mode
+dnsListeningMode: "ALL"
+
+# Additional FTL configuration via environment variables.
+# See https://docs.pi-hole.net/ftldns/configfile/ for all available options.
+# Example upstream DNS servers:
+#   FTLCONF_dns_upstreams: "8.8.8.8;8.8.4.4"
+extraEnv: {}
+
+credentials:
+  # Name of an existing Secret with key "web-password".
+  # If set, the chart will not create a Secret and will use this one instead.
+  existingSecret: ""
+  # Web admin password (FTLCONF_webserver_api_password).
+  # Required if existingSecret is not set.
+  webPassword: ""
+
+# DNS service — must be reachable from the network for ad blocking to work.
+# Use type LoadBalancer with MetalLB or type NodePort for direct node access.
+dnsService:
+  type: LoadBalancer
+  # Pin a specific IP from your LoadBalancer address pool (e.g. MetalLB).
+  # loadBalancerIP: ""
+  annotations: {}
+
+# Web UI service — ClusterIP is sufficient when paired with an HTTPRoute.
+webService:
+  type: ClusterIP
+  port: 80
+
+# Gateway API HTTPRoute for web UI access via Traefik (or another gateway).
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: traefik-gateway
+      namespace: ingress
+  # Leave empty to match all hostnames the parent gateway accepts,
+  # or specify one or more hostnames, e.g.:
+  #   - pihole.example.com
+  hostnames: []
+
+persistence:
+  pihole:
+    # Persistent storage for Pi-hole databases and configuration (/etc/pihole).
+    # Required for data to survive pod restarts.
+    existingClaim: ""
+    size: 1Gi
+    storageClass: "ceph-rbd"
+  dnsmasq:
+    # Custom dnsmasq config files (/etc/dnsmasq.d).
+    # Only needed when migrating from Pi-hole v5, or for advanced dnsmasq customisation.
+    # Requires environment variable FTLCONF_misc_etc_dnsmasq_d: "true".
+    enabled: false
+    existingClaim: ""
+    size: 100Mi
+    storageClass: "ceph-rbd"
+
+# Linux capabilities for optional Pi-hole features.
+# See https://docs.pi-hole.net/docker/configuration/#note-on-capabilities
+capabilities:
+  # Required when using Pi-hole as a DHCP server.
+  netAdmin: false
+  # Required when using Pi-hole as an NTP client to set the host's system time.
+  sysTime: false
+  # Optional: raise Pi-hole's scheduling priority.
+  sysNice: false
+
+resources: {}
+# Uncomment to set resource requests/limits:
+#   requests:
+#     memory: "128Mi"
+#     cpu: "100m"
+#   limits:
+#     memory: "256Mi"
+#     cpu: "500m"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}
+
+nameOverride: ""
+fullnameOverride: ""

@@ -1,0 +1,15 @@
+{{- if and .Values.persistence.dnsmasq.enabled (not .Values.persistence.dnsmasq.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-dnsmasq
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.persistence.dnsmasq.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.dnsmasq.size | quote }}
+{{- end }}

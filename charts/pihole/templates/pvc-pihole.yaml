@@ -1,0 +1,15 @@
+{{- if not .Values.persistence.pihole.existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "pihole.fullname" . }}-pihole
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.persistence.pihole.storageClass | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.pihole.size | quote }}
+{{- end }}
