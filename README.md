@@ -32,7 +32,7 @@ A Helm chart for [Pi-hole](https://pi-hole.net), a network-wide ad blocker.
 
 ## Prerequisites
 
-- Helm 3
+- Helm
 - A Kubernetes cluster with:
   - The [Gateway API CRDs](https://gateway-api.sigs.k8s.io/guides/#install-standard-channel) installed
   - A Gateway controller (e.g. Traefik) and a `Gateway` resource named `traefik-gateway` in the `ingress` namespace
